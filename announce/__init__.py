@@ -1,7 +1,7 @@
 import httplib
 import socket
 from django.conf import settings
-import json
+from django.utils import simplejson as json
 
 __version__ = '0.1.5'
 VERSION = map(int, __version__.split('.'))
@@ -19,9 +19,12 @@ class AnnounceClient(object):
         # A generic wrapper around httplib.
         # I initally wanted to use @kennethreitz's awesome Requests
         # (python-requests.org) but didn't want to intoduce more dependencies.
-        con = httplib.HTTPConnection(self.base_url)
-        con.request(method, path, *args, **kwargs)
-        return con.getresponse()
+        try:
+            con = httplib.HTTPConnection(self.base_url)
+            con.request(method, path, *args, **kwargs)
+            return con.getresponse()
+        except (httplib.HTTPException, socket.error):
+            return None
 
     def get_token(self, user_id):
         """
